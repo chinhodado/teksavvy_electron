@@ -1,0 +1,21 @@
+{
+  "name": "TekSavvy Usage Viewer",
+  "version": "1.0.0",
+  "description": "An Electron app to view TekSavvy internet usage history",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/electron/electron-quick-start",
+  "keywords": [],
+  "author": "chinhodado",
+  "license": "CC0-1.0",
+  "dependencies": {
+    "electron-json-storage": "^2.0.0",
+    "highcharts": "^6.1.1",
+    "request-promise-native": "^1.0.5"
+  },
+  "devDependencies": {
+    "electron": "^2.0.0"
+  }
+}

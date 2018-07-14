@@ -1,0 +1,25 @@
+<template class="task-template">
+    <section id="monthly-section" class="section js-section u-category-windows">
+        <header class="section-header">
+            <div class="section-wrapper">
+                <h1>
+                    <svg class="section-icon"><use xlink:href="assets/img/icons.svg#icon-windows"></use></svg>
+                    Monthly usage
+                </h1>
+                <h3 id="monthly-no-api-notice"></h3>
+            </div>
+        </header>
+
+        <div class="demo">
+            <div class="graph-container" id="graph-container1" style="width: 90%"></div>
+        </div>
+        <script>
+            if (localStorage.getItem('apiKey') === null) {
+                document.getElementById('monthly-no-api-notice').innerText = "Please add your API key first"
+            }
+            else {
+                makeMonthlyGraph();
+            }
+        </script>
+    </section>
+</template>
