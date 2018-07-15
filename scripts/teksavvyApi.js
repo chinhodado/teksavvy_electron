@@ -1,7 +1,7 @@
 let Highcharts = require('highcharts');
 let request = require('request-promise-native');
 
-async function makeGraph(url, div, graphName) {
+async function makeGraph(url, graphDiv, graphName, prevData) {
     let options = {
         url: url,
         headers: {
@@ -10,32 +10,59 @@ async function makeGraph(url, div, graphName) {
     };
 
     let result = await request(options);
+    result = JSON.parse(result);
 
-    let data = JSON.parse(result).value;
-    let onPeakDownloads = [];
-    let offPeakDownloads = [];
-    let onPeakUploads = [];
-    let offPeakUploads = [];
-    let date = [];
-    for (let i = 0; i < data.length; i++) {
-        onPeakDownloads.push(data[i].OnPeakDownload);
-        offPeakDownloads.push(data[i].OffPeakDownload);
-        onPeakUploads.push(data[i].OnPeakUpload);
-        offPeakUploads.push(data[i].OffPeakUpload);
+    let data = result.value;
 
-        if (data[i].StartDate) {
-            // monthly
-            date.push(data[i].StartDate.substring(0, 7));
-        }
-        else {
-            // daily
-            date.push(data[i].Date.substring(0, 10))
+    let graphData;
+    if (prevData) {
+        graphData = prevData;
+    }
+    else {
+        graphData = {
+            graphDiv: graphDiv,
+            graphName: graphName,
+            onPeakDownloads: [],
+            offPeakDownloads: [],
+            onPeakUploads: [],
+            offPeakUploads: [],
+            date: []
         }
     }
 
-    Highcharts.chart(div, {
+    for (let i = 0; i < data.length; i++) {
+        graphData.onPeakDownloads.push(data[i].OnPeakDownload);
+        graphData.offPeakDownloads.push(data[i].OffPeakDownload);
+        graphData.onPeakUploads.push(data[i].OnPeakUpload);
+        graphData.offPeakUploads.push(data[i].OffPeakUpload);
+
+        if (data[i].StartDate) {
+            // monthly
+            graphData.date.push(data[i].StartDate.substring(0, 7));
+        }
+        else {
+            // daily
+            graphData.date.push(data[i].Date.substring(0, 10))
+        }
+    }
+
+    if (result['odata.nextLink']) {
+        let nextLink = result['odata.nextLink'];
+        // shitty TekSavvy puts a HTTP link here but refuses to allow HTTP connection
+        if (nextLink.startsWith("http:")) {
+            nextLink = "https:" + nextLink.substring(5);
+        }
+        await makeGraph(nextLink, graphDiv, graphName, graphData)
+    }
+    else {
+        drawGraph(graphData)
+    }
+}
+
+function drawGraph(data) {
+    Highcharts.chart(data.graphDiv, {
         title: {
-            text: graphName
+            text: data.graphName
         },
         yAxis: {
             title: {
@@ -43,7 +70,7 @@ async function makeGraph(url, div, graphName) {
             }
         },
         xAxis: {
-            categories: date
+            categories: data.date
         },
         legend: {
             layout: 'vertical',
@@ -61,10 +88,10 @@ async function makeGraph(url, div, graphName) {
             }
         },
         series: [
-            { name: 'Download (on peak)', data: onPeakDownloads },
-            { name: 'Download (off peak)', data: offPeakDownloads },
-            { name: 'Upload (on peak)', data: onPeakUploads },
-            { name: 'Upload (off peak)', data: offPeakUploads },
+            { name: 'Download (on peak)', data: data.onPeakDownloads },
+            { name: 'Download (off peak)', data: data.offPeakDownloads },
+            { name: 'Upload (on peak)', data: data.onPeakUploads },
+            { name: 'Upload (off peak)', data: data.offPeakUploads },
         ],
         responsive: {
             rules: [{
@@ -83,10 +110,10 @@ async function makeGraph(url, div, graphName) {
     });
 }
 
-function makeMonthlyGraph() {
-    makeGraph("https://api.teksavvy.com/web/Usage/UsageSummaryRecords", "graph-container1", "Monthly usage");
+async function makeMonthlyGraph() {
+    await makeGraph("https://api.teksavvy.com/web/Usage/UsageSummaryRecords", "graph-container1", "Monthly usage");
 }
 
-function makeDailyGraph() {
-    makeGraph("https://api.teksavvy.com/web/Usage/UsageRecords", "graph-container2", "Daily usage");
+async function makeDailyGraph() {
+    await makeGraph("https://api.teksavvy.com/web/Usage/UsageRecords", "graph-container2", "Daily usage");
 }
