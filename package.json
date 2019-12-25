@@ -1,5 +1,5 @@
 {
-  "name": "TekSavvy Usage Viewer",
+  "name": "teksavvy_usage_viewer",
   "version": "1.0.0",
   "description": "An Electron app to view TekSavvy internet usage history",
   "main": "main.js",
@@ -13,9 +13,10 @@
   "dependencies": {
     "electron-json-storage": "^2.0.0",
     "highcharts": "^6.1.1",
-    "request-promise-native": "^1.0.5"
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.8"
   },
   "devDependencies": {
-    "electron": "^2.0.0"
+    "electron": "^7.1.7"
   }
 }
