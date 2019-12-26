@@ -48,9 +48,13 @@ async function makeGraph(url, graphDiv, graphName, prevData) {
 
     if (result['odata.nextLink']) {
         let nextLink = result['odata.nextLink'];
-        // shitty TekSavvy puts a HTTP link here but refuses to allow HTTP connection
+        // Shitty TekSavvy puts a HTTP link here but refuses to allow HTTP connection
+        // Also need to strip out the ":8081" part
+        // The original link looks like this:
+        // http://api.teksavvy.com:8081/web/Usage/UsageRecords?$skip=40
         if (nextLink.startsWith("http:")) {
             nextLink = "https:" + nextLink.substring(5);
+            nextLink = nextLink.replace(":8081", "")
         }
         await makeGraph(nextLink, graphDiv, graphName, graphData)
     }
