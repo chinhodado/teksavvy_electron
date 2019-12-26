@@ -20,6 +20,7 @@
             function saveApiKey() {
                 let apiKey = document.getElementById("api-key-input").value;
                 localStorage["apiKey"] = apiKey;
+                location.reload();
             }
 
             let apiKeyInput = document.getElementById("api-key-input");
